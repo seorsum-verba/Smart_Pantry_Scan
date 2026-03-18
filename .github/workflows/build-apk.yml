@@ -1,4 +1,4 @@
-name: Build Android APK (Debug)
+name: Build Android APK (Debug) - FIXED
 
 on:
   workflow_dispatch:
@@ -21,6 +21,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    # BUILD WEB ASSETS ERST!
+    - name: Build web app
+      run: npm run build  # Oder 'npm run build:prod' falls vorhanden
+      
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
@@ -30,20 +34,23 @@ jobs:
     - name: Install Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: Sync Capacitor
+    # ALLE ASSETS KOPIEREN
+    - name: Prepare Capacitor Android
       run: |
         npx cap sync android
         npx cap copy android
+        npx cap open android  # Optional: Öffnet Android Studio (skip in CI)
         
     - name: Build Android Debug APK
       run: |
         cd android
         chmod +x ./gradlew
+        ./gradlew clean  # Clean alte Builds
         ./gradlew assembleDebug
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: smart-pantry-debug-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk  # Genauer Pfad!
+        path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
