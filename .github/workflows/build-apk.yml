@@ -1,4 +1,4 @@
-name: Build Smart Pantry APK ✓
+name: Smart Pantry APK Build
 
 on:
   workflow_dispatch:
@@ -13,16 +13,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '24'
+        cache: 'npm'
     
-    - name: Install Capacitor CLI
-      run: npm i @capacitor/cli@latest
-      
-    - name: Verify webApp
-      run: |
-        ls -la webApp/
-        test -f webApp/index.html && echo "✅ webApp ready" || echo "❌ No index.html in webApp!"
+    - name: Install dependencies
+      run: npm ci
     
-    - name: Setup Java
+    - name: Setup Java 21
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -33,28 +29,22 @@ jobs:
     
     - name: Generate Debug Keystore
       run: |
-        keytool -genkey -v -keystore debug.keystore \
-          -storepass android -alias androiddebugkey -keypass android \
-          -dname "CN=Android,C=US"
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
     
-    - name: Build SIGNED APK
+    - name: Sync webApp & Build
       run: |
-        npx cap sync android --webDir webApp  # Explizit webApp!
+        npx cap sync android
         cd android
         chmod +x ./gradlew
-        ./gradlew clean assembleDebug \
-          -Pandroid.injected.signing.store.file=../debug.keystore \
-          -Pandroid.injected.signing.store.password=android \
-          -Pandroid.injected.signing.key.alias=androiddebugkey \
-          -Pandroid.injected.signing.key.password=android
+        ./gradlew clean assembleDebug -Pandroid.injected.signing.store.file=../debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
     
-    - name: APK Info
+    - name: APK Details
       run: |
-        cd android/app/build/outputs/apk/debug/
-        ls -la app-debug.apk
-        du -h app-debug.apk
-        
-    - name: Upload
+        cd android/app/build/outputs/apk/debug
+        ls -lh app-debug.apk
+        echo "Build complete!"
+    
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: smart-pantry-apk
