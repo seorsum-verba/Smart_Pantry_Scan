@@ -1,4 +1,4 @@
-name: ✅ Smart Pantry APK (SIMPLE)
+name: ✅ Smart Pantry APK (FINAL)
 
 on:
   workflow_dispatch:
@@ -26,18 +26,19 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
-    - name: Build APK
+    - name: Sync & Build APK
       run: |
         npx cap sync android
         cd android
         chmod +x ./gradlew
-        ./gradlew clean assembleDebug  # Standard Debug-Signatur!
+        ./gradlew clean assembleDebug  # KEINE Signing-Params!
     
     - name: APK Info
       run: |
         cd android/app/build/outputs/apk/debug/
         ls -lh app-debug.apk
         du -h app-debug.apk
+        echo "✅ READY!"
     
     - name: Upload
       uses: actions/upload-artifact@v4
