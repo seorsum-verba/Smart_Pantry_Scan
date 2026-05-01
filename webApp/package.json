@@ -4,13 +4,15 @@
   "description": "This is the web application component of the Smart Pantry Scan project, an inventory manager designed to help reduce food waste.",
   "main": "app.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build:css": "tailwindcss -c ./tailwind.local.config.js -i ./webApp/assets/css/tailwind.input.css -o ./webApp/assets/css/tailwind.css --minify"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "jsdom": "^27.2.0",
+    "tailwindcss": "^3.4.0",
     "vitest": "^4.0.14"
   }
 }
